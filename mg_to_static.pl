@@ -46,6 +46,16 @@ sub new_template ($) {
     return HTML::Template->new(path => $RealBin, filename => "${tmpl}.tmpl", utf8 => 1);
 }
 
+# detects type of given media, and returns its URI
+sub get_media_uri($$$) {
+    my ($media_id, $title, $glob) = @_;
+    my @all_matched = glob "$MG_ROOT/$media_id/$title.$glob";
+    my $filename=$all_matched[0];	# should always be only one...
+    #say "debug filename is $filename for id=$media_id and title=$title";
+    $filename =~ s{^.*/}{};		# remove all directory parts
+    return "/media_entries/$media_id/$filename";
+}
+
 # create one media file
 sub create_media ($$) {
     my ($collection, $media) = @_;
@@ -63,7 +73,8 @@ sub create_media ($$) {
         collection_slug => $$collection{'slug'},
         title => $$media{'title'},
         description => $$media{'description'},
-        img => "/media_entries/$$media{id}/$$media{title}.thumbnail.jpg",	# FIXME nije uvijek .jpg za .medium. (kao za .thumbnail.), glob()-aj pa detectaj
+        img => get_media_uri ($$media{id}, $$media{title}, '{medium,thumbnail}?{jpg,png,gif}'),			# prefer medium .jpg, but for non-image (like video, pdf) use thumbnail image instead
+        org_media => get_media_uri ($$media{id}, $$media{title}, '[a-z0-9][a-z0-9][a-z0-9]{,[a-z0-9]}'),	# match 3 or 4 letter extension ONLY
     );
 
     open my $m_index, '>', "$m_dir/index.html";
