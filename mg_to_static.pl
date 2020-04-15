@@ -6,15 +6,21 @@
 #   sudo -u postgres ./mg_to_static.pl > runme.sh && sh runme.sh
 #
 
+# FIXME zali se na UTF8 "Wide character in print" , zasto
+
 use warnings;
 use strict;
 use autodie qw/:all/;
 use feature 'say';
+use utf8;
 
 use DBI;
 use Data::Dumper;
 use HTML::Template;
 use FindBin qw( $RealBin );
+use File::Path qw(make_path);
+
+my $URL_REGEX = '(https?://[\w\-\.\?\+&;=/,#%@!:_~]+?)([,;\.!]*\s|[,;\.!]*$)';
 
 my $DB_NAME = 'mediagoblin';
 my $MG_ROOT = '/var/lib/mediagoblin/default/media/public/media_entries';
@@ -27,7 +33,7 @@ my $NEW_ROOT = './mg_html';
 # creates directory if it doesn't exists
 sub do_mkdir ($) {
     my ($dir) = @_;
-    mkdir $dir unless -d $dir;
+    make_path ($dir) unless -d $dir;
 }
 
 # create whole collection
@@ -36,13 +42,19 @@ sub create_collection($) {
 
     my $collection_template = HTML::Template->new(path => $RealBin, filename => 'collection.tmpl', utf8 => 1);
 
+    $$c{'description'} =~ s{$URL_REGEX}{<A HREF="$1">$1</A>$2}gi;	# replace $$c{description} da ako ima HTTP linkove da ih pretvori u A HREF
+
     $collection_template->param(
         title => $$c{'title'},
         description => $$c{'description'},
     );
 
-    print $collection_template->output;
-    die;
+    my $c_dir = "./u/$$c{'username'}/collection/$$c{'slug'}";
+    do_mkdir ($c_dir);
+
+    open my $c_index, '>', "$c_dir/index.html";
+    print $c_index $collection_template->output;
+    close $c_index;
 }
 
 #
