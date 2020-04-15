@@ -6,6 +6,9 @@
 #   sudo -u postgres ./mg_to_static.pl > runme.sh && sh runme.sh
 #
 
+# FIXME user template dodaj (za listom collectiona), kao i naslovnica glavna index.html sa listom usera
+# FIXME media info kada je created/added?
+# FIXME vidi za .webm i ostale tipove, ne samo za jpg da radi! (glob? i pazi za thumnail i medium!)
 # FIXME zali se na UTF8 "Wide character in print" , zasto
 # FIXME check da li ima fileova u $MG_ROOT koje nismo referencirali u $NEW_ROOT
 
@@ -37,15 +40,47 @@ sub do_mkdir ($) {
     make_path ($dir) unless -d $dir;
 }
 
+# creates new HTML::Template
+sub new_template ($) {
+    my ($tmpl) = @_;
+    return HTML::Template->new(path => $RealBin, filename => "${tmpl}.tmpl", utf8 => 1);
+}
+
+# create one media file
+sub create_media ($$) {
+    my ($collection, $media) = @_;
+    say "user=$$collection{'username'} collection=$$collection{'title'} (slug=$$collection{'slug'}) media=$$media{id} title=$$media{title} slug=$$media{slug} desc=$$media{description}";
+
+    my $m_dir = "./u/$$collection{'username'}/m/$$media{slug}";
+    do_mkdir ($m_dir);
+
+    my $media_template = new_template('media');
+
+    # media template headers
+    $media_template->param(
+        username => $$collection{'username'}, 
+        collection_name => $$collection{'title'},
+        collection_slug => $$collection{'slug'},
+        title => $$media{'title'},
+        description => $$media{'description'},
+        img => "/media_entries/$$media{id}/$$media{title}.thumbnail.jpg",	# FIXME nije uvijek .jpg za .medium. (kao za .thumbnail.), glob()-aj pa detectaj
+    );
+
+    open my $m_index, '>', "$m_dir/index.html";
+    print $m_index $media_template->output;
+    close $m_index;
+
+}
+
 # create whole collection
 sub create_collection($) {
     my ($c) = @_;
 
-    my $collection_template = HTML::Template->new(path => $RealBin, filename => 'collection.tmpl', utf8 => 1);
+    my $collection_template = new_template('collection');
 
     $$c{'description'} =~ s{\[(.+?)\]\s*\((.+?)\)}{<A HREF="$2">$1</A>}gi;	# convert HTTP links to <A HREF>
 
-    # template headers
+    # collection template headers
     $collection_template->param(
         title => $$c{'title'},
         description => $$c{'description'},
@@ -56,10 +91,9 @@ sub create_collection($) {
     $one_collection_sth->execute($$c{'id'});
     
     while (my $media = $one_collection_sth->fetchrow_hashref) {
-        say "collection=$$c{id} media=$$media{id} title=$$media{title} slug=$$media{slug} desc=$$media{description}";
+        create_media ($c, $media);
+        #FIXME add template params for TMPL_LOOP - return arrayref by create_media() ?
     }
-
-
 
     # create index.html
     my $c_dir = "./u/$$c{username}/collection/$$c{slug}";

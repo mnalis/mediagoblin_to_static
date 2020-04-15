@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<title><TMPL_VAR NAME=title></title>
+</head>
+
+<body>
+	Browsing media by <A HREF="/u/<TMPL_VAR NAME=username>"><TMPL_VAR NAME=username></A><br>
+	Collected in <A HREF="/u/<TMPL_VAR NAME=username>/collection/<TMPL_VAR NAME=collection_slug>"><TMPL_VAR NAME=collection_name></A><br>
+	
+	<IMG SRC="<TMPL_VAR NAME=img>">
+	<h1><TMPL_VAR NAME=title></h1>
+	<p><TMPL_VAR NAME=description></p>
+</body>
+
+</html>
