@@ -58,10 +58,18 @@ sub get_media_uri($$$) {
     return "/media_entries/$media_id/$filename";
 }
 
+# creates index.html in specified directory
+sub template_write_html ($$) {
+    my ($out_dir, $template)
+    open my $html_file, '>', "$out_dir/index.html";
+    print $html_file $template->output;
+    close $html_file;
+}
+
 # create one media file
 sub create_media ($$) {
     my ($collection, $media) = @_;
-    say "user=$$collection{'username'} collection=$$collection{'title'} (slug=$$collection{'slug'}) media=$$media{id} title=$$media{title} slug=$$media{slug} desc=$$media{description}";
+    #say "user=$$collection{'username'} collection=$$collection{'title'} (slug=$$collection{'slug'}) media=$$media{id} title=$$media{title} slug=$$media{slug} desc=$$media{description}";
 
     my $m_dir = "u/$$collection{'username'}/m/$$media{slug}";
     do_mkdir ($m_dir);
@@ -79,9 +87,7 @@ sub create_media ($$) {
         org_media => get_media_uri ($$media{id}, $$media{title}, '[a-z0-9][a-z0-9][a-z0-9]{,[a-z0-9]}'),	# match 3 or 4 letter extension ONLY
     );
 
-    open my $m_index, '>', "$m_dir/index.html";
-    print $m_index $media_template->output;
-    close $m_index;
+    template_write_html ($m_dir, $media_template);
 
     my %one_media = (
         thumb => get_media_uri ($$media{id}, $$media{title}, 'thumbnail.*'),
@@ -120,9 +126,7 @@ sub create_collection($) {
         media_loop => \@loop_data,
     );
 
-    open my $c_index, '>', "$c_dir/index.html";
-    print $c_index $collection_template->output;
-    close $c_index;
+    template_write_html ($c_dir, $collection_template);
 }
 
 #
