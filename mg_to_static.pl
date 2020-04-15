@@ -10,11 +10,12 @@
 # FIXME htpa portganih -- https://media.mnalis.com/u/biciklijade/collection/info/ ? ili https://media.mnalis.com/u/biciklijade/collection/rapha-2016-zagrijavanje-1/ ? i https://media.mnalis.com/u/biciklijade/m/karlovac-1-maj-2015-9c9e/ ? why?
 # FIXME CSS referenciraj i napravi neki defaultni?
 # FIXME zali se na "Use of uninitialized value $filename in substitution" za hrpu stvari, check
-# FIXME user template dodaj (za listom collectiona), kao i naslovnica glavna index.html sa listom usera
+# FIXME user template dodaj (sa listom collectiona), kao i naslovnica glavna index.html sa listom usera
 # FIXME media info kada je created/added?
 # FIXME vidi za .webm i ostale tipove, ne samo za jpg da radi! (glob? i pazi za thumnail i medium!)
 # FIXME zali se na UTF8 "Wide character in print" , zasto
 # FIXME check da li ima fileova u $MG_ROOT koje nismo referencirali u $NEW_ROOT
+# FIXME commit updates to github
 
 use warnings;
 use strict;
