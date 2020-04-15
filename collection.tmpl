@@ -9,6 +9,12 @@
 <body>
 	<h1><TMPL_VAR NAME="title"></h1>
 	<p><TMPL_VAR NAME="description"></p>
+
+	<TMPL_LOOP NAME="media_loop">
+		<A HREF="<TMPL_VAR NAME=url>">
+			<IMG SRC="<TMPL_VAR NAME=thumb>">
+		</A>
+	</TMPL_LOOP>
 </body>
 
 </html>

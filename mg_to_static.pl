@@ -3,9 +3,11 @@
 # converts data from Mediagoblin instance to static html
 #
 # run as: 
-#   sudo -u postgres ./mg_to_static.pl > runme.sh && sh runme.sh
+#   sudo -u postgres ./mg_to_static.pl
 #
 
+# FIXME CSS referenciraj i napravi neki defaultni?
+# FIXME zali se na "Use of uninitialized value $filename in substitution" za hrpu stvari, check
 # FIXME user template dodaj (za listom collectiona), kao i naslovnica glavna index.html sa listom usera
 # FIXME media info kada je created/added?
 # FIXME vidi za .webm i ostale tipove, ne samo za jpg da radi! (glob? i pazi za thumnail i medium!)
@@ -61,7 +63,7 @@ sub create_media ($$) {
     my ($collection, $media) = @_;
     say "user=$$collection{'username'} collection=$$collection{'title'} (slug=$$collection{'slug'}) media=$$media{id} title=$$media{title} slug=$$media{slug} desc=$$media{description}";
 
-    my $m_dir = "./u/$$collection{'username'}/m/$$media{slug}";
+    my $m_dir = "u/$$collection{'username'}/m/$$media{slug}";
     do_mkdir ($m_dir);
 
     my $media_template = new_template('media');
@@ -81,6 +83,11 @@ sub create_media ($$) {
     print $m_index $media_template->output;
     close $m_index;
 
+    my %one_media = (
+        thumb => get_media_uri ($$media{id}, $$media{title}, 'thumbnail.*'),
+        url => "/$m_dir/",
+    );
+    return \%one_media;
 }
 
 # create whole collection
@@ -91,24 +98,27 @@ sub create_collection($) {
 
     $$c{'description'} =~ s{\[(.+?)\]\s*\((.+?)\)}{<A HREF="$2">$1</A>}gi;	# convert HTTP links to <A HREF>
 
-    # collection template headers
-    $collection_template->param(
-        title => $$c{'title'},
-        description => $$c{'description'},
-    );
     
     # template loop for each picture
     my $one_collection_sth = $dbh->prepare ("SELECT core__media_entries.id,  core__media_entries.title, core__media_entries.slug, core__media_entries.description FROM core__collection_items LEFT JOIN core__media_entries ON core__media_entries.id = core__collection_items.media_entry WHERE collection=? ORDER BY position, core__collection_items.id");
     $one_collection_sth->execute($$c{'id'});
+    my @loop_data = ();
     
     while (my $media = $one_collection_sth->fetchrow_hashref) {
-        create_media ($c, $media);
-        #FIXME add template params for TMPL_LOOP - return arrayref by create_media() ?
+        my $one_media_href = create_media ($c, $media);
+        push(@loop_data, $one_media_href);
     }
 
     # create index.html
     my $c_dir = "./u/$$c{username}/collection/$$c{slug}";
     do_mkdir ($c_dir);
+
+    # collection template params
+    $collection_template->param(
+        title => $$c{'title'},
+        description => $$c{'description'},
+        media_loop => \@loop_data,
+    );
 
     open my $c_index, '>', "$c_dir/index.html";
     print $c_index $collection_template->output;
