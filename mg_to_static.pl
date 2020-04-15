@@ -20,8 +20,6 @@ use HTML::Template;
 use FindBin qw( $RealBin );
 use File::Path qw(make_path);
 
-my $URL_REGEX = '(https?://[\w\-\.\?\+&;=/,#%@!:_~]+?)([,;\.!]*\s|[,;\.!]*$)';
-
 my $DB_NAME = 'mediagoblin';
 my $MG_ROOT = '/var/lib/mediagoblin/default/media/public/media_entries';
 my $NEW_ROOT = './mg_html';
@@ -42,7 +40,7 @@ sub create_collection($) {
 
     my $collection_template = HTML::Template->new(path => $RealBin, filename => 'collection.tmpl', utf8 => 1);
 
-    $$c{'description'} =~ s{$URL_REGEX}{<A HREF="$1">$1</A>$2}gi;	# replace $$c{description} da ako ima HTTP linkove da ih pretvori u A HREF
+    $$c{'description'} =~ s{\[(.+?)\]\s*\((.+?)\)}{<A HREF="$2">$1</A>}gi;	# replace HTTP linkove da ih pretvori u A HREF
 
     $collection_template->param(
         title => $$c{'title'},
