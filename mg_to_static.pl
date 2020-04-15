@@ -6,6 +6,8 @@
 #   sudo -u postgres ./mg_to_static.pl
 #
 
+# FIXME ordering vidi za sloveniju i za sifon kade, koji je ispravan ordering?
+# FIXME htpa portganih -- https://media.mnalis.com/u/biciklijade/collection/info/ ? ili https://media.mnalis.com/u/biciklijade/collection/rapha-2016-zagrijavanje-1/ ? i https://media.mnalis.com/u/biciklijade/m/karlovac-1-maj-2015-9c9e/ ? why?
 # FIXME CSS referenciraj i napravi neki defaultni?
 # FIXME zali se na "Use of uninitialized value $filename in substitution" za hrpu stvari, check
 # FIXME user template dodaj (za listom collectiona), kao i naslovnica glavna index.html sa listom usera
@@ -42,12 +44,6 @@ sub do_mkdir ($) {
     make_path ($dir) unless -d $dir;
 }
 
-# creates new HTML::Template
-sub new_template ($) {
-    my ($tmpl) = @_;
-    return HTML::Template->new(path => $RealBin, filename => "${tmpl}.tmpl", utf8 => 1);
-}
-
 # detects type of given media, and returns its URI
 sub get_media_uri($$$) {
     my ($media_id, $title, $glob) = @_;
@@ -58,9 +54,22 @@ sub get_media_uri($$$) {
     return "/media_entries/$media_id/$filename";
 }
 
+# creates new HTML::Template
+sub template_new ($) {
+    my ($tmpl) = @_;
+    return HTML::Template->new(
+        die_on_bad_params => 1,
+        strict => 1,
+        case_sensitive => 1,
+        path => $RealBin,
+        filename => "${tmpl}.tmpl",
+        utf8 => 1,
+    );
+}
+
 # creates index.html in specified directory
 sub template_write_html ($$) {
-    my ($out_dir, $template)
+    my ($out_dir, $template) = @_;
     open my $html_file, '>', "$out_dir/index.html";
     print $html_file $template->output;
     close $html_file;
@@ -74,7 +83,7 @@ sub create_media ($$) {
     my $m_dir = "u/$$collection{'username'}/m/$$media{slug}";
     do_mkdir ($m_dir);
 
-    my $media_template = new_template('media');
+    my $media_template = template_new('media');
 
     # media template headers
     $media_template->param(
@@ -100,13 +109,13 @@ sub create_media ($$) {
 sub create_collection($) {
     my ($c) = @_;
 
-    my $collection_template = new_template('collection');
+    my $collection_template = template_new('collection');
 
     $$c{'description'} =~ s{\[(.+?)\]\s*\((.+?)\)}{<A HREF="$2">$1</A>}gi;	# convert HTTP links to <A HREF>
 
     
     # template loop for each picture
-    my $one_collection_sth = $dbh->prepare ("SELECT core__media_entries.id,  core__media_entries.title, core__media_entries.slug, core__media_entries.description FROM core__collection_items LEFT JOIN core__media_entries ON core__media_entries.id = core__collection_items.media_entry WHERE collection=? ORDER BY position, core__collection_items.id");
+    my $one_collection_sth = $dbh->prepare ("SELECT core__media_entries.id,  core__media_entries.title, core__media_entries.slug, core__media_entries.description FROM core__collection_items LEFT JOIN core__media_entries ON core__media_entries.id = core__collection_items.media_entry WHERE collection=? ORDER BY position DESC, core__collection_items.id DESC");
     $one_collection_sth->execute($$c{'id'});
     my @loop_data = ();
     
@@ -121,6 +130,7 @@ sub create_collection($) {
 
     # collection template params
     $collection_template->param(
+        username => $$c{'username'}, 
         title => $$c{'title'},
         description => $$c{'description'},
         media_loop => \@loop_data,
