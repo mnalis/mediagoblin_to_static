@@ -12,7 +12,7 @@
 # FIXME zali se na "Use of uninitialized value $filename in substitution" za hrpu stvari, check
 # FIXME user template dodaj (sa listom collectiona), kao i naslovnica glavna index.html sa listom usera
 # FIXME media info kada je created/added?
-# FIXME vidi za .webm i ostale tipove, ne samo za jpg da radi! (glob? i pazi za thumnail i medium!)
+# FIXME vidi za .webm i ostale tipove, ne samo za jpg da radi! (glob? i pazi za thumbnail i medium!)
 # FIXME zali se na UTF8 "Wide character in print" , zasto
 # FIXME check da li ima fileova u $MG_ROOT koje nismo referencirali u $NEW_ROOT
 # FIXME commit updates to github
@@ -45,15 +45,39 @@ sub do_mkdir ($) {
     make_path ($dir) unless -d $dir;
 }
 
-# detects type of given media, and returns its URI
-sub get_media_uri($$$) {
-    my ($media_id, $title, $glob) = @_;
-    my @all_matched = glob "$MG_ROOT/$media_id/*.$glob";
-    my $filename=$all_matched[0];	# should always be only one...
-    #say "debug filename is $filename for id=$media_id and title=$title";
-    $filename =~ s{^.*/}{};		# remove all directory parts
+# returns URI for media matching given regexp
+sub _get_media_uri_regex($$$) {
+    my ($media_id, $title, $regexp) = @_;
+    
+    my $media_dir = "$MG_ROOT/$media_id";
+    opendir(my $dh, $media_dir);
+    my @files = grep { /$regexp/ && -f "$media_dir/$_" } readdir($dh);
+    closedir $dh;
+
+    my $filename = $files[0];
+    #say "debug filename is $filename for id=$media_id and title=$title and regexp=$regexp (also $files[1])" if $media_id == 1821;
     return "/media_entries/$media_id/$filename";
 }
+
+# get small thumbnail image only
+sub get_media_uri_thumb_img($$) {
+    my ($media_id, $title) = @_;
+    return	_get_media_uri_regex ($media_id, $title, qr/\.thumbnail\./);
+}
+
+# get original media (image or video or pdf or ...) in full size (or failing that, in medium)
+sub get_media_uri_orig($$) {
+    my ($media_id, $title) = @_;
+    return 	_get_media_uri_regex ($media_id, $title, qr/(?<!medium|mbnail)\.(png|gif|jpg|jpeg|webm|pdf)$/i);	# FIXME not ideal, as we hardcode extensions... 'fgrep -v' would be better
+}
+
+# prefer medium sized image, but for non-image media (like video, pdf) use thumbnail image instead -  FIXME: should probably use video player, or PDF viewer etc instead, but that is more work...
+sub get_media_uri_med_img($$) {
+    my ($media_id, $title) = @_;
+    return	_get_media_uri_regex ($media_id, $title, qr/\.medium\.(jpg|jpeg|png|gif)$/) ||
+                _get_media_uri_regex ($media_id, $title, qr/\.(jpg|jpeg|png|gif)$/i);
+}
+
 
 # creates new HTML::Template
 sub template_new ($) {
@@ -87,6 +111,7 @@ sub create_media ($$) {
     my $media_template = template_new('media');
 
     #say "debug1 /mn/ FIXME u=$$collection{'username'} ct=$$collection{'title'} cid=$$collection{'id'} cs=$$collection{'slug'} mt=$$media{'title'} mid=$$media{id}";
+    
     # media template headers
     $media_template->param(
         username => $$collection{'username'}, 
@@ -94,14 +119,13 @@ sub create_media ($$) {
         collection_slug => $$collection{'slug'},
         title => $$media{'title'},
         description => $$media{'description'},
-        img => get_media_uri ($$media{id}, $$media{title}, '{medium,thumbnail}?{jpg,jpeg,png,gif}'),		# prefer medium .jpg, but for non-image (like video, pdf) use thumbnail image instead
-        org_media => get_media_uri ($$media{id}, $$media{title}, '[a-z0-9][a-z0-9][a-z0-9]{,[a-z0-9]}'),	# match 3 or 4 letter extension ONLY
+        img => get_media_uri_med_img ($$media{id}, $$media{title}),
+        org_media => get_media_uri_orig ($$media{id}, $$media{title}),
     );
-
     template_write_html ($m_dir, $media_template);
 
     my %one_media = (
-        thumb => get_media_uri ($$media{id}, $$media{title}, 'thumbnail.*'),
+        thumb => get_media_uri_thumb_img ($$media{id}, $$media{title}),
         url => "/$m_dir/",
     );
     return \%one_media;
