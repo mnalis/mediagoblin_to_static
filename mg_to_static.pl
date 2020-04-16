@@ -48,7 +48,7 @@ sub do_mkdir ($) {
 # detects type of given media, and returns its URI
 sub get_media_uri($$$) {
     my ($media_id, $title, $glob) = @_;
-    my @all_matched = glob "$MG_ROOT/$media_id/$title.$glob";
+    my @all_matched = glob "$MG_ROOT/$media_id/*.$glob";
     my $filename=$all_matched[0];	# should always be only one...
     #say "debug filename is $filename for id=$media_id and title=$title";
     $filename =~ s{^.*/}{};		# remove all directory parts
@@ -86,6 +86,7 @@ sub create_media ($$) {
 
     my $media_template = template_new('media');
 
+    say "debug1 /mn/ FIXME u=$$collection{'username'} ct=$$collection{'title'} cid=$$collection{'id'} cs=$$collection{'slug'} mt=$$media{'title'} mid=$$media{id}";
     # media template headers
     $media_template->param(
         username => $$collection{'username'}, 
