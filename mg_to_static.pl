@@ -86,7 +86,7 @@ sub create_media ($$) {
 
     my $media_template = template_new('media');
 
-    say "debug1 /mn/ FIXME u=$$collection{'username'} ct=$$collection{'title'} cid=$$collection{'id'} cs=$$collection{'slug'} mt=$$media{'title'} mid=$$media{id}";
+    #say "debug1 /mn/ FIXME u=$$collection{'username'} ct=$$collection{'title'} cid=$$collection{'id'} cs=$$collection{'slug'} mt=$$media{'title'} mid=$$media{id}";
     # media template headers
     $media_template->param(
         username => $$collection{'username'}, 
@@ -94,7 +94,7 @@ sub create_media ($$) {
         collection_slug => $$collection{'slug'},
         title => $$media{'title'},
         description => $$media{'description'},
-        img => get_media_uri ($$media{id}, $$media{title}, '{medium,thumbnail}?{jpg,png,gif}'),			# prefer medium .jpg, but for non-image (like video, pdf) use thumbnail image instead
+        img => get_media_uri ($$media{id}, $$media{title}, '{medium,thumbnail}?{jpg,jpeg,png,gif}'),		# prefer medium .jpg, but for non-image (like video, pdf) use thumbnail image instead
         org_media => get_media_uri ($$media{id}, $$media{title}, '[a-z0-9][a-z0-9][a-z0-9]{,[a-z0-9]}'),	# match 3 or 4 letter extension ONLY
     );
 
