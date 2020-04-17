@@ -13,7 +13,6 @@
 # FIXME user template dodaj (sa listom collectiona), kao i naslovnica glavna index.html sa listom usera
 # FIXME media info kada je created/added?
 # FIXME vidi za .webm i ostale tipove, ne samo za jpg da radi! (glob? i pazi za thumbnail i medium!)
-# FIXME zali se na UTF8 "Wide character in print" , zasto
 # FIXME check da li ima fileova u $MG_ROOT koje nismo referencirali u $NEW_ROOT
 # FIXME commit updates to github
 
@@ -22,6 +21,7 @@ use strict;
 use autodie qw/:all/;
 use feature 'say';
 use utf8;
+use open ':std', ':encoding(UTF-8)';
 
 use DBI;
 use Data::Dumper;
