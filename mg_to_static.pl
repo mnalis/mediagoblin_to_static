@@ -9,7 +9,6 @@
 # FIXME ordering vidi za sloveniju i za sifon kade, koji je ispravan ordering? i za koji ono collection imam rucno overriden?
 # FIXME portgano empty -- https://media.mnalis.com/u/biciklijade/collection/rapha-2016-zagrijavanje-1/ ? why?
 # FIXME CSS referenciraj i napravi neki defaultni?
-# FIXME media info kada je created/added?
 # FIXME vidi za .webm i ostale tipove, ne samo za jpg da radi! (glob? i pazi za thumbnail i medium!)
 # FIXME check da li ima fileova u $MG_ROOT koje nismo referencirali u $NEW_ROOT
 # FIXME commit updates to github
@@ -122,6 +121,7 @@ sub create_media ($$) {
         collection_slug => $$collection{'slug'},
         title => $$media{'title'},
         description => $$media{'description'},
+        created => $$media{'created'},
         img => get_media_uri_med_img ($$media{id}, $$media{title}),
         org_media => get_media_uri_orig ($$media{id}, $$media{title}),
     );
@@ -153,9 +153,11 @@ sub create_collection($) {
         WHERE collection=?
         ORDER BY position DESC, core__collection_items.id DESC");
     $one_collection_sth->execute($$c{'id'});
+
     my @loop_media = ();
-    
+
     while (my $media = $one_collection_sth->fetchrow_hashref) {
+        #say "debug2 for ciod=$$c{id}: mid=$$media{id} mtitle=$$media{title} mcreated=$$media{created}";
         my $one_media_href = create_media ($c, $media);
         push @loop_media, $one_media_href;
     }
@@ -189,7 +191,7 @@ chdir $NEW_ROOT or die "can't chdir to $NEW_ROOT: $!";
 my $collections_sth = $dbh->prepare("
     SELECT core__collections.id, title, slug, core__users.username, description
     FROM core__collections
-    LEFT JOIN core__users ON core__collections.creator = core__users.id;");
+    LEFT JOIN core__users ON core__collections.creator = core__users.id");
 $collections_sth->execute();
 
 
