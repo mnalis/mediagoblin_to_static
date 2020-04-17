@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<title><TMPL_VAR NAME=username></title>
+</head>
+
+<body>
+	<h1>User <TMPL_VAR NAME=username></h1>
+	<p>Back to <A HREF="/">home</A></p>
+
+	<h2>List of collections:</h2>
+	<ul>
+
+	<TMPL_LOOP NAME=col_loop>
+		<li><A HREF="collection/<TMPL_VAR NAME=c_slug>"><TMPL_VAR NAME=c_title></A></li>
+	</TMPL_LOOP>
+
+	</ul>
+</body>
+
+</html>

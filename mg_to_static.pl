@@ -6,7 +6,7 @@
 #   sudo -u postgres ./mg_to_static.pl
 #
 
-# FIXME ordering vidi za sloveniju i za sifon kade, koji je ispravan ordering?
+# FIXME ordering vidi za sloveniju i za sifon kade, koji je ispravan ordering? i za koji ono collection imam rucno overriden?
 # FIXME htpa portganih -- https://media.mnalis.com/u/biciklijade/collection/info/ ? ili https://media.mnalis.com/u/biciklijade/collection/rapha-2016-zagrijavanje-1/ ? i https://media.mnalis.com/u/biciklijade/m/karlovac-1-maj-2015-9c9e/ ? why?
 # FIXME CSS referenciraj i napravi neki defaultni?
 # FIXME zali se na "Use of uninitialized value $filename in substitution" za hrpu stvari, check
@@ -134,6 +134,8 @@ sub create_media ($$) {
     return \%one_media;
 }
 
+my %ALL_COLLECTIONS= ();
+
 # create whole collection
 sub create_collection($) {
     my ($c) = @_;
@@ -162,10 +164,11 @@ sub create_collection($) {
         username => $$c{'username'}, 
         title => $$c{'title'},
         description => $$c{'description'},
-        media_loop => \@loop_data,
+        media_loop => \@loop_data,		# list of all media in collection
     );
 
     template_write_html ($c_dir, $collection_template);
+    push @{$ALL_COLLECTIONS{$$c{'username'}}}, { c_title => $$c{'title'}, c_slug => $$c{'slug'} };
 }
 
 #
@@ -180,8 +183,22 @@ chdir $NEW_ROOT or die "can't chdir to $NEW_ROOT: $!";
 my $collections_sth = $dbh->prepare('SELECT core__collections.id, title, slug, core__users.username, description FROM core__collections LEFT JOIN core__users ON core__collections.creator = core__users.id;');
 $collections_sth->execute();
 
+
 while (my $collection = $collections_sth->fetchrow_hashref) {
     create_collection ($collection);
 }
+
+foreach my $username (keys %ALL_COLLECTIONS) {
+    my $user_template = template_new('user');
+    $user_template->param(
+        username => $username,
+        col_loop => $ALL_COLLECTIONS{$username},
+    );
+    my $u_dir = "./u/$username";
+    template_write_html ($u_dir, $user_template);
+}
+
+
+say Dumper(\%ALL_COLLECTIONS);
 
 $dbh->disconnect;

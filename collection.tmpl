@@ -3,14 +3,14 @@
 
 <head>
 	<meta charset="utf-8">
-	<title><TMPL_VAR NAME="title"></title>
+	<title><TMPL_VAR NAME=title></title>
 </head>
 
 <body>
-	<h1><TMPL_VAR NAME="title"> by <A HREF="/u/<TMPL_VAR NAME=username>/"><TMPL_VAR NAME=username></A></h1>
-	<p><TMPL_VAR NAME="description"></p>
+	<h1><TMPL_VAR NAME=title> by <A HREF="/u/<TMPL_VAR NAME=username>/"><TMPL_VAR NAME=username></A></h1>
+	<p><TMPL_VAR NAME=description></p>
 
-	<TMPL_LOOP NAME="media_loop">
+	<TMPL_LOOP NAME=media_loop>
 		<A HREF="<TMPL_VAR NAME=url>"><IMG SRC="<TMPL_VAR NAME=thumb>"></A>
 	</TMPL_LOOP>
 </body>
