@@ -1,7 +1,7 @@
 # mediagoblin_to_static
-Converts MediaGoblin site to static HTML
+Converts MediaGoblin site to static HTML (trying to preserve most of directory structure)
 
-for example, when your MediaGoblin instance breaks when upgrading to Debian Buster...
+Might be useful, for example, when your MediaGoblin instance breaks when upgrading to Debian Buster...
 
 * make sure you edit `mg_to_static.pl` first and set correct directories to which this user have permission to write.
 
