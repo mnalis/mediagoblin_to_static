@@ -146,7 +146,12 @@ sub create_collection($) {
 
     
     # template loop for each picture
-    my $one_collection_sth = $dbh->prepare ("SELECT core__media_entries.id,  core__media_entries.title, core__media_entries.slug, core__media_entries.description, core__media_entries.created FROM core__collection_items LEFT JOIN core__media_entries ON core__media_entries.id = core__collection_items.media_entry WHERE collection=? ORDER BY position DESC, core__collection_items.id DESC");
+    my $one_collection_sth = $dbh->prepare ("
+        SELECT core__media_entries.id,  core__media_entries.title, core__media_entries.slug, core__media_entries.description, core__media_entries.created
+        FROM core__collection_items
+        LEFT JOIN core__media_entries ON core__media_entries.id = core__collection_items.media_entry
+        WHERE collection=?
+        ORDER BY position DESC, core__collection_items.id DESC");
     $one_collection_sth->execute($$c{'id'});
     my @loop_media = ();
     
@@ -181,7 +186,10 @@ do_mkdir ($NEW_ROOT);
 chdir $NEW_ROOT or die "can't chdir to $NEW_ROOT: $!";
 
 # create all collections
-my $collections_sth = $dbh->prepare('SELECT core__collections.id, title, slug, core__users.username, description FROM core__collections LEFT JOIN core__users ON core__collections.creator = core__users.id;');
+my $collections_sth = $dbh->prepare("
+    SELECT core__collections.id, title, slug, core__users.username, description
+    FROM core__collections
+    LEFT JOIN core__users ON core__collections.creator = core__users.id;");
 $collections_sth->execute();
 
 
