@@ -7,10 +7,8 @@
 #
 
 # FIXME ordering vidi za sloveniju i za sifon kade, koji je ispravan ordering? i za koji ono collection imam rucno overriden?
-# FIXME htpa portganih -- https://media.mnalis.com/u/biciklijade/collection/info/ ? ili https://media.mnalis.com/u/biciklijade/collection/rapha-2016-zagrijavanje-1/ ? i https://media.mnalis.com/u/biciklijade/m/karlovac-1-maj-2015-9c9e/ ? why?
+# FIXME hrpa portganih -- https://media.mnalis.com/u/biciklijade/collection/info/ ? ili https://media.mnalis.com/u/biciklijade/collection/rapha-2016-zagrijavanje-1/ ? i https://media.mnalis.com/u/biciklijade/m/karlovac-1-maj-2015-9c9e/ ? why?
 # FIXME CSS referenciraj i napravi neki defaultni?
-# FIXME zali se na "Use of uninitialized value $filename in substitution" za hrpu stvari, check
-# FIXME user template dodaj (sa listom collectiona), kao i naslovnica glavna index.html sa listom usera
 # FIXME media info kada je created/added?
 # FIXME vidi za .webm i ostale tipove, ne samo za jpg da radi! (glob? i pazi za thumbnail i medium!)
 # FIXME check da li ima fileova u $MG_ROOT koje nismo referencirali u $NEW_ROOT
@@ -148,11 +146,11 @@ sub create_collection($) {
     # template loop for each picture
     my $one_collection_sth = $dbh->prepare ("SELECT core__media_entries.id,  core__media_entries.title, core__media_entries.slug, core__media_entries.description FROM core__collection_items LEFT JOIN core__media_entries ON core__media_entries.id = core__collection_items.media_entry WHERE collection=? ORDER BY position DESC, core__collection_items.id DESC");
     $one_collection_sth->execute($$c{'id'});
-    my @loop_data = ();
+    my @loop_media = ();
     
     while (my $media = $one_collection_sth->fetchrow_hashref) {
         my $one_media_href = create_media ($c, $media);
-        push(@loop_data, $one_media_href);
+        push @loop_media, $one_media_href;
     }
 
     # create index.html
@@ -164,7 +162,7 @@ sub create_collection($) {
         username => $$c{'username'}, 
         title => $$c{'title'},
         description => $$c{'description'},
-        media_loop => \@loop_data,		# list of all media in collection
+        media_loop => \@loop_media,		# list of all media in collection
     );
 
     template_write_html ($c_dir, $collection_template);
@@ -180,6 +178,7 @@ $dbh = DBI->connect("dbi:Pg:dbname=$DB_NAME", '', '', {AutoCommit => 0, RaiseErr
 do_mkdir ($NEW_ROOT);
 chdir $NEW_ROOT or die "can't chdir to $NEW_ROOT: $!";
 
+# create all collections
 my $collections_sth = $dbh->prepare('SELECT core__collections.id, title, slug, core__users.username, description FROM core__collections LEFT JOIN core__users ON core__collections.creator = core__users.id;');
 $collections_sth->execute();
 
@@ -188,6 +187,7 @@ while (my $collection = $collections_sth->fetchrow_hashref) {
     create_collection ($collection);
 }
 
+# create all users
 foreach my $username (keys %ALL_COLLECTIONS) {
     my $user_template = template_new('user');
     $user_template->param(
@@ -198,7 +198,15 @@ foreach my $username (keys %ALL_COLLECTIONS) {
     template_write_html ($u_dir, $user_template);
 }
 
-
-say Dumper(\%ALL_COLLECTIONS);
+# create main index.html
+my $main_template = template_new('main');
+my @loop_users = ();
+foreach my $username (keys %ALL_COLLECTIONS) {
+        push @loop_users, { username => $username };
+}
+$main_template->param(
+    user_loop =>  \@loop_users,
+);
+template_write_html ('./', $main_template);
 
 $dbh->disconnect;
