@@ -7,7 +7,7 @@
 #
 
 # FIXME ordering vidi za sloveniju i za sifon kade, koji je ispravan ordering? i za koji ono collection imam rucno overriden?
-# FIXME portgano empty -- https://media.mnalis.com/u/biciklijade/collection/rapha-2016-zagrijavanje-1/ ? why?
+# FIXME portgano empty -- https://media.mnalis.com/u/biciklijade/collection/rapha-2016-zagrijavanje-1/ ? why? zbilja nula, select title,created,items from core__collections where items=0; -- obrisi
 # FIXME CSS referenciraj i napravi neki defaultni?
 # FIXME vidi za .webm i ostale tipove, ne samo za jpg da radi! (glob? i pazi za thumbnail i medium!)
 # FIXME check da li ima fileova u $MG_ROOT koje nismo referencirali u $NEW_ROOT
