@@ -7,7 +7,7 @@
 #
 
 # FIXME ordering vidi za sloveniju i za sifon kade, koji je ispravan ordering? i za koji ono collection imam rucno overriden?
-# FIXME hrpa portganih -- https://media.mnalis.com/u/biciklijade/collection/info/ ? ili https://media.mnalis.com/u/biciklijade/collection/rapha-2016-zagrijavanje-1/ ? i https://media.mnalis.com/u/biciklijade/m/karlovac-1-maj-2015-9c9e/ ? why?
+# FIXME portgano empty -- https://media.mnalis.com/u/biciklijade/collection/rapha-2016-zagrijavanje-1/ ? why?
 # FIXME CSS referenciraj i napravi neki defaultni?
 # FIXME media info kada je created/added?
 # FIXME vidi za .webm i ostale tipove, ne samo za jpg da radi! (glob? i pazi za thumbnail i medium!)
@@ -144,7 +144,7 @@ sub create_collection($) {
 
     
     # template loop for each picture
-    my $one_collection_sth = $dbh->prepare ("SELECT core__media_entries.id,  core__media_entries.title, core__media_entries.slug, core__media_entries.description FROM core__collection_items LEFT JOIN core__media_entries ON core__media_entries.id = core__collection_items.media_entry WHERE collection=? ORDER BY position DESC, core__collection_items.id DESC");
+    my $one_collection_sth = $dbh->prepare ("SELECT core__media_entries.id,  core__media_entries.title, core__media_entries.slug, core__media_entries.description, core__media_entries.created FROM core__collection_items LEFT JOIN core__media_entries ON core__media_entries.id = core__collection_items.media_entry WHERE collection=? ORDER BY position DESC, core__collection_items.id DESC");
     $one_collection_sth->execute($$c{'id'});
     my @loop_media = ();
     
