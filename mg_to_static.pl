@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -T
 # Matija Nalis <mnalis-perl@voyager.hr> GPLv3+ started 2020-04-15
 # converts data from Mediagoblin instance to static html
 #
@@ -86,6 +86,8 @@ sub template_new ($) {
     return HTML::Template->new(
         die_on_bad_params => 1,
         strict => 1,
+        default_escape => 'HTML',
+        force_untaint => 2,
         case_sensitive => 1,
         path => $RealBin,
         filename => "${tmpl}.tmpl",
@@ -173,7 +175,7 @@ sub create_collection($) {
 # main
 #
 
-$dbh = DBI->connect("dbi:Pg:dbname=$DB_NAME", '', '', {AutoCommit => 0, RaiseError => 1});
+$dbh = DBI->connect("dbi:Pg:dbname=$DB_NAME", '', '', {AutoCommit => 0, RaiseError => 1, Taint => 0});	# FIXME should use Taint => 1
 
 do_mkdir ($NEW_ROOT);
 chdir $NEW_ROOT or die "can't chdir to $NEW_ROOT: $!";
