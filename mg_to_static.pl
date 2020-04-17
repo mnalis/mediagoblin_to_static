@@ -54,8 +54,9 @@ sub _get_media_uri_regex($$$) {
     my @files = grep { /$regexp/ && -f "$media_dir/$_" } readdir($dh);
     closedir $dh;
 
+    return undef if !@files;
     my $filename = $files[0];
-    #say "debug filename is $filename for id=$media_id and title=$title and regexp=$regexp (also $files[1])" if $media_id == 1821;
+    warn "undefined filename is $filename for id=$media_id and title=$title and regexp=$regexp (also $files[1])" if !defined $filename;
     return "/media_entries/$media_id/$filename";
 }
 
@@ -68,7 +69,9 @@ sub get_media_uri_thumb_img($$) {
 # get original media (image or video or pdf or ...) in full size (or failing that, in medium)
 sub get_media_uri_orig($$) {
     my ($media_id, $title) = @_;
-    return 	_get_media_uri_regex ($media_id, $title, qr/(?<!medium|mbnail)\.(png|gif|jpg|jpeg|webm|pdf)$/i);	# FIXME not ideal, as we hardcode extensions... 'fgrep -v' would be better
+    return 	_get_media_uri_regex ($media_id, $title, qr/(?<!medium|mbnail)\.(png|gif|jpg|jpeg|webm|pdf)$/i) ||	# FIXME not ideal, as we hardcode extensions... 'fgrep -v' would be better
+                _get_media_uri_regex ($media_id, $title, qr/\.medium\./);						# if original media not found, use medium media
+
 }
 
 # prefer medium sized image, but for non-image media (like video, pdf) use thumbnail image instead -  FIXME: should probably use video player, or PDF viewer etc instead, but that is more work...
