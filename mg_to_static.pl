@@ -105,6 +105,7 @@ sub create_media ($$) {
     my $media_template = template_new('media');
 
     #say "debug1 /mn/ FIXME u=$$collection{'username'} ct=$$collection{'title'} cid=$$collection{'id'} cs=$$collection{'slug'} mt=$$media{'title'} mid=$$media{id}";
+    $$media{'description'} =~ s{\[(.+?)\]\s*\((.+?)\)}{<A HREF="$2">$1</A>}gi;	# convert HTTP links to <A HREF>
     
     # media template headers
     $media_template->param(
