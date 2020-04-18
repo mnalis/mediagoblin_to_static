@@ -6,11 +6,6 @@
 #   sudo -u postgres ./mg_to_static.pl
 #
 
-# FIXME portgano empty -- https://media.mnalis.com/u/biciklijade/collection/rapha-2016-zagrijavanje-1/ ? why? zbilja nula, select title,created,items from core__collections where items=0; -- obrisi
-# FIXME CSS referenciraj i napravi neki defaultni?
-# FIXME check da li ima fileova u $MG_ROOT koje nismo referencirali u $NEW_ROOT
-# FIXME commit updates to github
-
 use warnings;
 use strict;
 use autodie qw/:all/;
